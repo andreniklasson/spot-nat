@@ -5,13 +5,15 @@ NAT Gateways is the recommended and safe solution since it is managed by AWS, bu
 
 ## Design
 Its always good to have a plan b, and the plan b of this solution is the have one or more idle NAT gateways. Each NAT instance is configured by its own Auto Scaling group (ASG). The moment a NAT instance receives a spot interruption notice, the routes that points to that instance is immediately replaced with routes that points to a NAT gateway. When the ASG has replaced the terminated instance in that autoscaling group, the traffic is routed to the new NAT instance. This is to always ensure connectivity for the private subnets.
-![Design](images/design.png)
 
-A spot interruption notice event triggers a fallbackand the traffic is routed to the NAT gateway:
+![Design](images/design.png)
+A design that covers two availability zones, using a single fallback NAT gateway.
+
 ![Design](images/fallback.png)
+_A spot interruption notice event triggers a fallback and the traffic is routed to the NAT gateway_
 
 ## Event handler
-The lambda event handler is invoked by Cloudwatch events through AWS eventBridge. The relevant events are of the detail type:
+The lambda event handler is invoked by Cloudwatch events through AWS EventBridge. The relevant events are of the detail type:
 ```
 EC2 Instance State-change Notification
 EC2 Spot Instance Interruption Warning
@@ -21,11 +23,11 @@ EC2 Spot Instance Interruption Warning
 When invoked by a spot termination event, the lambda will check the route tables for the affected instance and replace their 0.0.0.0/0 routes with routes to a NAT gateway. It then detaches the NAT instance from its ASG, to quicken up the process of instance replacement.
 
 ### State change
-The handler will route the traffic to a NAT-gateway the same way it does for a spot interruption when receiving a status change to one of the following: _"stopping", "stopped", "shutting-down", "terminated"_. When it receives a status of "running" the existing route is replaced with a new route that routes the traffic to the new instance.
+The handler will route the traffic to a NAT-gateway the same way it does for a spot interruption when it receives one of the following status changes: _"stopping", "stopped", "shutting-down", "terminated"_. When it receives a status of "running" the existing route is replaced with a new route that routes the traffic to the newly started instance.
 
 ## Should i use this?
 If you don't have long open connections and can withstand some connections being closed the when a route replacement occurs, why the heck _nat_?
-I personally think at least dev and test environments always should be using NAT instances instead of NAT gatways.
+I personally think at least dev and test environments always should be using NAT instances instead of NAT gateways.
 
 ## AMI
 The recommended approach is to use an AMI instead of a user-data script. AWS provides a useful [guide](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_NAT_Instance.html) that describes how to configure NAT instance. However, the guide includes a _potential_ pitfall as of 2023-09-25. AWS provides the commands:
