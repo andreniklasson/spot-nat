@@ -4,7 +4,7 @@ Network address translation (NAT) gateways and instances allows resources in you
 NAT Gateways is the recommended and safe solution since it is managed by AWS, but using NAT instances is becoming more common due to the pricing model. However, if you want a more _chad_ like solution, you should consider NAT:ing your traffic using [spot instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html) ;)
 
 ## Design
-Its always good to have a plan b, and the plan b of this solution is the have one or more idle NAT gateways. Each NAT instance is configured by its own Auto Scaling group (ASG). The moment a NAT instance receives a spot interruption notice, the routes that points to that instance is immediately replaced with routes that points to a NAT gateway. When the ASG has replaced the terminated instance in that autoscaling group, the traffic is routed to the new NAT instance. This is to always ensure connectivity for the private subnets.
+Its always good to have a plan b, and the plan b of this solution is to have one or more idle NAT gateways. Each NAT instance is configured by its own Auto Scaling group (ASG). The moment a NAT instance receives a spot interruption notice, the routes that points to that instance is immediately replaced with routes that points to a NAT gateway. When the ASG has replaced the terminated instance in that autoscaling group, the traffic is routed to the new NAT instance. This is to ensure connectivity for the private subnets.
 
 | ![Design](images/design.png) | 
 |:--:| 
@@ -49,7 +49,7 @@ iptables -F FORWARD
 
 Use Amazon Linux 1 if you are going to utilize the user-data input. Amazon Linux 2 or your own AMI:s risks of not running cloud-init since they have already "started" once before.
 
-The complete script that also disables source/destination checks is located in _modules/spot-nat/scripts/startup.sh_
+The complete script, _modules/spot-nat/scripts/startup.sh_, also disables the ENI source/destination checks.
 
 ## Using the module
 The provided solution is deployed using Terraform. An example of usage is found in the _main.tf_ file. Each element of the _vpc_info_ parameter will create an ASG in the provided subnet. Each NAT instance can be provided with one or more route tables to configure, one NAT Gatway (the ASG:s can use the same) and one elastic ip. Provide a list of similar instance families to spread your instance pool.
