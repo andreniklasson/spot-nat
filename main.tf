@@ -15,6 +15,7 @@ module "nat_instances" {
   source = "./modules/spot-nat"
   name   = "NAT-spot-instance"
   ami_id = "ami-0648880541a3156f7"
+  key_name = "KEY_NAME"
   instance_types = [
     "t3.medium"
   ]

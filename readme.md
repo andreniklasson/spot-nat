@@ -6,11 +6,13 @@ NAT Gateways is the recommended and safe solution since it is managed by AWS, bu
 ## Design
 Its always good to have a plan b, and the plan b of this solution is the have one or more idle NAT gateways. Each NAT instance is configured by its own Auto Scaling group (ASG). The moment a NAT instance receives a spot interruption notice, the routes that points to that instance is immediately replaced with routes that points to a NAT gateway. When the ASG has replaced the terminated instance in that autoscaling group, the traffic is routed to the new NAT instance. This is to always ensure connectivity for the private subnets.
 
-![Design](images/design.png)
-A design that covers two availability zones, using a single fallback NAT gateway.
+| ![Design](images/design.png) | 
+|:--:| 
+| *A design that covers two availability zones, using a single fallback NAT gateway* |
 
-![Design](images/fallback.png)
-_A spot interruption notice event triggers a fallback and the traffic is routed to the NAT gateway_
+| ![Design](images/fallback.png) | 
+|:--:| 
+| *A spot interruption notice event triggers a fallback and the traffic is routed to the NAT gateway* |
 
 ## Event handler
 The lambda event handler is invoked by Cloudwatch events through AWS EventBridge. The relevant events are of the detail type:
