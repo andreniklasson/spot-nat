@@ -29,7 +29,7 @@ When invoked by a spot termination event, the lambda will check the route tables
 | *A spot interruption notice event triggers a fallback and the traffic is routed to the NAT gateway* |
 
 #### State change
-The handler will route the traffic to a NAT-gateway the same way it does for a spot interruption when it receives one of the following status changes: _"stopping", "stopped", "shutting-down", "terminated"_. When it receives a status of "running" the existing route is replaced with a new route that routes the traffic to the newly started instance.
+The handler will route the traffic to a NAT-gateway the same way it does for a spot interruption when it receives one of the following status changes: _"stopping", "stopped", "shutting-down", "terminated"_. When it receives a status change of "running", the existing routes to 0.0.0.0/0 are replaced with new routes that routes the traffic to the newly started instance.
 
 ## Should i use this?
 If you don't have any long open connections or can withstand them being potentially disrupted, why the heck _nat_? Existing connections may be disrupted as their traffic will after a route replacement be routed differently. I personally think at least dev and test environments always should be using NAT instances instead of NAT gateways.
